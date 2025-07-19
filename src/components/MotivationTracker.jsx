@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Calendar, BarChart3, Sun, LogOut } from 'lucide-react'
+import { Calendar, BarChart3, Sun, Moon, StickyNote, LogOut } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import QuestionCard from './QuestionCard'
@@ -15,6 +15,8 @@ const MotivationTracker = () => {
   const [questions, setQuestions] = useState([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [wakeUpTime, setWakeUpTime] = useState('')
+  const [bedtime, setBedtime] = useState('')
+  const [notes, setNotes] = useState('')
   const [activeTab, setActiveTab] = useState('today')
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -87,6 +89,8 @@ const MotivationTracker = () => {
 
       if (data) {
         setWakeUpTime(data.wake_up_time || '')
+        setBedtime(data.bedtime || '')
+        setNotes(data.notes || '')
         
         const dayAnswers = {}
         questions.forEach(q => {
@@ -96,6 +100,8 @@ const MotivationTracker = () => {
         setAnswers(dayAnswers)
       } else {
         setWakeUpTime('')
+        setBedtime('')
+        setNotes('')
         const initialAnswers = {}
         questions.forEach(q => {
           initialAnswers[q.question_key] = null
@@ -104,6 +110,8 @@ const MotivationTracker = () => {
       }
     } catch (error) {
       setWakeUpTime('')
+      setBedtime('')
+      setNotes('')
       const initialAnswers = {}
       questions.forEach(q => {
         initialAnswers[q.question_key] = null
@@ -122,6 +130,8 @@ const MotivationTracker = () => {
           user_id: user.id,
           record_date: selectedDate,
           wake_up_time: wakeUpTime || null,
+          bedtime: bedtime || null,
+          notes: notes || null,
           total_score: score
         }, {
           onConflict: 'user_id,record_date'
@@ -236,17 +246,46 @@ const MotivationTracker = () => {
               onDateChange={setSelectedDate} 
             />
 
-            <div className="mb-6 p-4 bg-yellow-50 rounded-lg">
-              <div className="flex items-center mb-2">
-                <Sun className="w-5 h-5 text-yellow-500 mr-2" />
-                <span className="font-medium">今日の起床時間：</span>
+            <div className="mb-6 space-y-4">
+              <div className="p-4 bg-yellow-50 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <Sun className="w-5 h-5 text-yellow-500 mr-2" />
+                  <span className="font-medium">今日の起床時間：</span>
+                </div>
+                <input
+                  type="time"
+                  value={wakeUpTime}
+                  onChange={(e) => setWakeUpTime(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
-              <input
-                type="time"
-                value={wakeUpTime}
-                onChange={(e) => setWakeUpTime(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+
+              <div className="p-4 bg-purple-50 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <Moon className="w-5 h-5 text-purple-500 mr-2" />
+                  <span className="font-medium">昨日の就寝時間：</span>
+                </div>
+                <input
+                  type="time"
+                  value={bedtime}
+                  onChange={(e) => setBedtime(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="p-4 bg-green-50 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <StickyNote className="w-5 h-5 text-green-500 mr-2" />
+                  <span className="font-medium">備考・メモ：</span>
+                </div>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="今日の調子や気になることを自由に記録できます..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  rows="3"
+                />
+              </div>
             </div>
 
             <div className="space-y-4 mb-6">

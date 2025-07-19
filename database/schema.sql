@@ -27,6 +27,8 @@ CREATE TABLE daily_records (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     record_date DATE NOT NULL,
     wake_up_time TIME,
+    bedtime TIME,
+    notes TEXT,
     total_score INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
