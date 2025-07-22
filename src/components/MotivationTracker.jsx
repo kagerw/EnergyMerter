@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Calendar, BarChart3, Sun, Moon, StickyNote, LogOut, Bed } from 'lucide-react'
+import { Calendar, BarChart3, Sun, Moon, StickyNote, LogOut, Bed, TrendingUp } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import QuestionCard from './QuestionCard'
@@ -8,6 +8,7 @@ import StatsCards from './StatsCards'
 import RecordsList from './RecordsList'
 import DateSelector from './DateSelector'
 import SaveDialog from './SaveDialog'
+import SleepCharts from './SleepCharts'
 
 const MotivationTracker = () => {
   const { user, signOut } = useAuth()
@@ -22,10 +23,12 @@ const MotivationTracker = () => {
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [loading, setLoading] = useState(true)
   const [answers, setAnswers] = useState({})
+  const [sleepData, setSleepData] = useState([])
 
   useEffect(() => {
     loadQuestions()
     loadRecords()
+    loadSleepData()
   }, [])
 
   useEffect(() => {
@@ -166,6 +169,7 @@ const MotivationTracker = () => {
       }
 
       await loadRecords()
+      await loadSleepData()
       setShowSaveDialog(true)
     } catch (error) {
       console.error('記録の保存に失敗しました:', error)
@@ -194,6 +198,25 @@ const MotivationTracker = () => {
       sleepScores.reduce((a, b) => a + b, 0) / sleepScores.length : null
     
     return { avgScore, maxScore, recentTrend, avgSleepScore }
+  }
+
+  const loadSleepData = async () => {
+    try {
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      
+      const { data, error } = await supabase
+        .from('daily_records')
+        .select('record_date, wake_up_time, bedtime, sleep_score')
+        .eq('user_id', user?.id)
+        .gte('record_date', sevenDaysAgo.toISOString().split('T')[0])
+        .order('record_date', { ascending: true })
+
+      if (error) throw error
+      setSleepData(data || [])
+    } catch (error) {
+      console.error('睡眠データの読み込みに失敗しました:', error)
+    }
   }
 
   if (loading) {
@@ -246,6 +269,17 @@ const MotivationTracker = () => {
           >
             <BarChart3 className="w-5 h-5 inline mr-2" />
             履歴・統計
+          </button>
+          <button
+            onClick={() => setActiveTab('sleep')}
+            className={`flex-1 px-6 py-3 font-medium transition-colors ${
+              activeTab === 'sleep' 
+                ? 'bg-blue-500 text-white' 
+                : 'text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            <TrendingUp className="w-5 h-5 inline mr-2" />
+            睡眠グラフ
           </button>
         </div>
 
@@ -341,6 +375,12 @@ const MotivationTracker = () => {
           <div className="bg-white rounded-lg shadow-lg p-6">
             <StatsCards stats={getStats()} />
             <RecordsList records={records} totalQuestions={questions.length} />
+          </div>
+        )}
+
+        {activeTab === 'sleep' && (
+          <div>
+            <SleepCharts sleepData={sleepData} />
           </div>
         )}
       </div>
