@@ -1,5 +1,5 @@
 import React from 'react'
-import { Sun } from 'lucide-react'
+import { Sun, Bed } from 'lucide-react'
 
 const RecordsList = ({ records, totalQuestions }) => {
   if (records.length === 0) {
@@ -18,6 +18,12 @@ const RecordsList = ({ records, totalQuestions }) => {
                 <span className="text-sm text-gray-600">
                   <Sun className="w-4 h-4 inline mr-1" />
                   {record.wake_up_time}
+                </span>
+              )}
+              {record.sleep_score && (
+                <span className="text-sm text-gray-600">
+                  <Bed className="w-4 h-4 inline mr-1" />
+                  {record.sleep_score}
                 </span>
               )}
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">

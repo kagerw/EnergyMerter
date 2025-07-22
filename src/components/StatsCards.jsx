@@ -1,9 +1,9 @@
 import React from 'react'
-import { BarChart3, TrendingUp } from 'lucide-react'
+import { BarChart3, TrendingUp, Bed } from 'lucide-react'
 
 const StatsCards = ({ stats }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
       <div className="bg-blue-50 p-4 rounded-lg">
         <div className="flex items-center justify-between">
           <div>
@@ -31,6 +31,17 @@ const StatsCards = ({ stats }) => {
             </p>
           </div>
           <TrendingUp className={`w-8 h-8 ${stats.recentTrend >= 0 ? 'text-green-500' : 'text-red-500'}`} />
+        </div>
+      </div>
+      <div className="bg-indigo-50 p-4 rounded-lg">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-600">平均睡眠スコア</p>
+            <p className="text-2xl font-bold text-indigo-600">
+              {stats.avgSleepScore ? stats.avgSleepScore.toFixed(1) : '−'}
+            </p>
+          </div>
+          <Bed className="w-8 h-8 text-indigo-500" />
         </div>
       </div>
     </div>

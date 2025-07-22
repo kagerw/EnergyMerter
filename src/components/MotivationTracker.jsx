@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Calendar, BarChart3, Sun, Moon, StickyNote, LogOut } from 'lucide-react'
+import { Calendar, BarChart3, Sun, Moon, StickyNote, LogOut, Bed } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import QuestionCard from './QuestionCard'
@@ -16,6 +16,7 @@ const MotivationTracker = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [wakeUpTime, setWakeUpTime] = useState('')
   const [bedtime, setBedtime] = useState('')
+  const [sleepScore, setSleepScore] = useState('')
   const [notes, setNotes] = useState('')
   const [activeTab, setActiveTab] = useState('today')
   const [showSaveDialog, setShowSaveDialog] = useState(false)
@@ -90,6 +91,7 @@ const MotivationTracker = () => {
       if (data) {
         setWakeUpTime(data.wake_up_time || '')
         setBedtime(data.bedtime || '')
+        setSleepScore(data.sleep_score || '')
         setNotes(data.notes || '')
         
         const dayAnswers = {}
@@ -101,6 +103,7 @@ const MotivationTracker = () => {
       } else {
         setWakeUpTime('')
         setBedtime('')
+        setSleepScore('')
         setNotes('')
         const initialAnswers = {}
         questions.forEach(q => {
@@ -111,6 +114,7 @@ const MotivationTracker = () => {
     } catch (error) {
       setWakeUpTime('')
       setBedtime('')
+      setSleepScore('')
       setNotes('')
       const initialAnswers = {}
       questions.forEach(q => {
@@ -131,6 +135,7 @@ const MotivationTracker = () => {
           record_date: selectedDate,
           wake_up_time: wakeUpTime || null,
           bedtime: bedtime || null,
+          sleep_score: sleepScore || null,
           notes: notes || null,
           total_score: score
         }, {
@@ -164,7 +169,8 @@ const MotivationTracker = () => {
       setShowSaveDialog(true)
     } catch (error) {
       console.error('記録の保存に失敗しました:', error)
-      alert('記録の保存に失敗しました。')
+      console.error('詳細エラー情報:', error.message, error.details, error.code)
+      alert(`記録の保存に失敗しました: ${error.message || 'unknown error'}`)
     }
   }
 
@@ -173,7 +179,7 @@ const MotivationTracker = () => {
   }
 
   const getStats = () => {
-    if (records.length === 0) return { avgScore: 0, maxScore: 0, recentTrend: 0 }
+    if (records.length === 0) return { avgScore: 0, maxScore: 0, recentTrend: 0, avgSleepScore: 0 }
     
     const scores = records.map(r => r.total_score)
     const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length
@@ -183,7 +189,11 @@ const MotivationTracker = () => {
     const recentTrend = recent7.length > 1 ? 
       recent7[0].total_score - recent7[recent7.length - 1].total_score : 0
     
-    return { avgScore, maxScore, recentTrend }
+    const sleepScores = records.filter(r => r.sleep_score !== null).map(r => r.sleep_score)
+    const avgSleepScore = sleepScores.length > 0 ? 
+      sleepScores.reduce((a, b) => a + b, 0) / sleepScores.length : null
+    
+    return { avgScore, maxScore, recentTrend, avgSleepScore }
   }
 
   if (loading) {
@@ -269,6 +279,22 @@ const MotivationTracker = () => {
                   type="time"
                   value={bedtime}
                   onChange={(e) => setBedtime(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="p-4 bg-indigo-50 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <Bed className="w-5 h-5 text-indigo-500 mr-2" />
+                  <span className="font-medium">睡眠スコア：</span>
+                </div>
+                <input
+                  type="number"
+                  value={sleepScore}
+                  onChange={(e) => setSleepScore(e.target.value)}
+                  placeholder="睡眠アプリのスコアを入力"
+                  min="0"
+                  max="100"
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
