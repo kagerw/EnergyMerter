@@ -89,6 +89,9 @@ const SleepCharts = ({ sleepData }) => {
               {entry.dataKey === 'wakeUpTime' && entry.value && (
                 `起床時間: ${numberToTime(entry.value)}`
               )}
+              {entry.dataKey === 'bedtime' && entry.value && (
+                `就寝時間: ${entry.value >= 24 ? numberToTime(entry.value - 24) : numberToTime(entry.value)}`
+              )}
               {entry.dataKey === 'sleepScore' && entry.value && (
                 `睡眠スコア: ${entry.value}点`
               )}
@@ -133,7 +136,7 @@ const SleepCharts = ({ sleepData }) => {
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            <ReferenceLine y={7} stroke="#22c55e" strokeDasharray="5 5" label="理想的な起床時間 (7:00)" />
+            <ReferenceLine y={8} stroke="#22c55e" strokeDasharray="5 5" label="理想的な起床時間 (8:00)" />
             <Line 
               type="monotone" 
               dataKey="wakeUpTime" 
@@ -173,7 +176,7 @@ const SleepCharts = ({ sleepData }) => {
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            <ReferenceLine y={23} stroke="#22c55e" strokeDasharray="5 5" label="理想的な就寝時間 (23:00)" />
+            <ReferenceLine y={25} stroke="#22c55e" strokeDasharray="5 5" label="理想的な就寝時間 (1:00)" />
             <Line 
               type="monotone" 
               dataKey="bedtime" 
